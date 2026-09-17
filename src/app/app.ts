@@ -1,12 +1,146 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { DecimalPipe } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
+interface Provider {
+  name: string;
+  shortName: string;
+  tagline: string;
+  rate: number;
+  fee: number;
+  timeline: string;
+  color: string;
+  featured?: boolean;
+  quoteSource?: 'live' | 'fallback';
+}
 
 @Component({
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [DecimalPipe, FormsModule],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
 })
-export class App {
-  protected readonly title = signal('best-palitan');
+export class App implements OnInit {
+  protected amount = 500;
+  protected referenceRate = 69.4;
+  protected referenceRateSource: 'live' | 'fallback' = 'fallback';
+  private readonly http: HttpClient;
+
+  protected readonly providers: Provider[] = [
+    {
+      name: 'BC Remit',
+      shortName: 'BC',
+      tagline: 'Reliable and simple',
+      rate: 63.42,
+      fee: 2.99,
+      timeline: 'Minutes',
+      color: '#f4b942',
+    },
+    {
+      name: 'Nala',
+      shortName: 'N',
+      tagline: 'Fast digital transfers',
+      rate: 63.85,
+      fee: 1.49,
+      timeline: 'Instant',
+      color: '#f06a8d',
+      featured: true,
+    },
+    {
+      name: 'LemFi',
+      shortName: 'L',
+      tagline: 'Built for global families',
+      rate: 63.68,
+      fee: 1.99,
+      timeline: 'Same day',
+      color: '#6e63dd',
+    },
+    {
+      name: 'ACE',
+      shortName: 'A',
+      tagline: 'A familiar high-street choice',
+      rate: 62.95,
+      fee: 3.99,
+      timeline: '1–2 days',
+      color: '#3a9d8f',
+    },
+    {
+      name: 'Ria',
+      shortName: 'R',
+      tagline: 'Send with confidence',
+      rate: 63.21,
+      fee: 3.49,
+      timeline: 'Minutes',
+      color: '#ef7652',
+    },
+    {
+      name: 'Paysend',
+      shortName: 'P',
+      tagline: 'Cards to cards, made easy',
+      rate: 63.55,
+      fee: 2.49,
+      timeline: 'Same day',
+      color: '#3979d8',
+    },
+  ];
+
+  constructor(http: HttpClient) {
+    this.http = http;
+  }
+
+  async ngOnInit() {
+    //const bcRemit = this.providers.find((provider) => provider.name === 'BC Remit');
+    //if (!bcRemit) {
+    //  return;
+    //}
+
+    try {
+      /*const [quote, referenceRate] = await Promise.all([
+        firstValueFrom(
+        this.http.get<{ rate: number; fee: number; source: 'live' | 'fallback' }>(
+          '/api/bcremit-quote',
+        ),
+        ),
+        firstValueFrom(
+          this.http.get<{ rate: number; source: 'live' | 'fallback' }>(
+              '/api/reference-rate',
+          ),
+        ),
+      ]);*/
+
+      const referenceRate = await firstValueFrom(
+        this.http.get<{ rate: number; source: 'live' | 'fallback' }>(
+          '/api/reference-rate',
+        ),
+      );
+
+      // bcRemit.rate = quote.rate;
+      // bcRemit.fee = quote.fee;
+      // bcRemit.quoteSource = quote.source;
+      this.referenceRate = referenceRate.rate;
+      this.referenceRateSource = referenceRate.source;
+    } catch {
+      //bcRemit.quoteSource = 'fallback';
+    }
+  }
+
+  protected referenceConvertedAmount(): number {
+    const value = Number.isFinite(this.amount) && this.amount > 0 ? this.amount : 0;
+    return value * this.referenceRate;
+  }
+
+  protected convertedAmount(provider: Provider): number {
+    return this.safeAmount() * provider.rate;
+  }
+
+  protected finalAmount(provider: Provider): number {
+    return Math.max(0, (this.safeAmount() - provider.fee) * provider.rate);
+  }
+
+  private safeAmount(): number {
+    return Number.isFinite(this.amount) && this.amount > 0 ? this.amount : 0;
+  }
 }
