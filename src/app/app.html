@@ -55,7 +55,7 @@
         <p class="eyebrow">YOUR OPTIONS</p>
         <h2 id="comparison-title">Compare providers</h2>
       </div>
-      <p class="updated">BC Remit is fetched locally · Other rates are illustrative</p>
+      <p class="updated">Live quotes are fetched from each provider</p>
     </div>
 
     <div class="provider-grid">
@@ -70,7 +70,7 @@
             </div>
             <div>
               <h3>{{ provider.name }}</h3>
-              <p>{{ provider.tagline }}{{ provider.name === 'BC Remit' && provider.quoteSource === 'live' ? ' · Live rate' : '' }}</p>
+              <p>{{ provider.tagline }}{{ provider.quoteSource === 'live' ? ' · Live rate' : '' }}</p>
             </div>
           </div>
 

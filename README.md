@@ -56,7 +56,7 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 
 ## Deploying to Cloudflare
 
-This app deploys as a Cloudflare Worker with the Angular production bundle served as static assets. The Worker also provides the `/api/bcremit-quote` and `/api/reference-rate` endpoints. BC Remit quotes use Cloudflare Browser Rendering, so no local Chrome or Express server is needed in production.
+This app deploys as a Cloudflare Worker with the Angular production bundle served as static assets. The Worker provides `/api/provider-quotes`, which fetches BC Remit, Nala, LemFi, ACE, Zolt, and Paysend quotes through Cloudflare Browser Rendering, and `/api/reference-rate` for the Google Sheet reference rate. No local Chrome or Express server is needed in production.
 
 1. Authenticate once with `npx wrangler login`.
 2. Run `npm run deploy`.

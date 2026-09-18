@@ -17,6 +17,7 @@ interface Provider {
 }
 
 interface Quote {
+  name: string;
   rate: number;
   fee: number;
   source: 'live' | 'fallback';
@@ -104,12 +105,9 @@ export class App implements OnInit {
 
   async ngOnInit() {
     try {
-      const [bcremit, nala, referenceRate] = await Promise.all([
+      const [providerQuotes, referenceRate] = await Promise.all([
         firstValueFrom(
-          this.http.get<Quote>('/api/bcremit-quote'),
-        ),
-        firstValueFrom(
-          this.http.get<Quote>('/api/nala-quote'),
+          this.http.get<Quote[]>('/api/provider-quotes'),
         ),
         firstValueFrom(
           this.http.get<ReferenceRate>('/api/reference-rate'),
@@ -118,25 +116,15 @@ export class App implements OnInit {
 
       this.providers.update((providers) =>
         providers.map((provider) => {
-          if (provider.name === 'BC Remit') {
-            return {
-              ...provider,
-              rate: bcremit.rate,
-              fee: bcremit.fee,
-              quoteSource: bcremit.source,
-            };
-          }
-
-          if (provider.name === 'Nala') {
-            return {
-              ...provider,
-              rate: nala.rate,
-              fee: nala.fee,
-              quoteSource: nala.source,
-            };
-          }
-
-          return provider;
+          const quote = providerQuotes.find((quote) => quote.name === provider.name);
+          return quote
+            ? {
+                ...provider,
+                rate: quote.rate,
+                fee: quote.fee,
+                quoteSource: quote.source,
+              }
+            : provider;
         }),
       );
       this.referenceRate.set(referenceRate.rate);
