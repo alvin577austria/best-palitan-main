@@ -10,7 +10,7 @@
   <section class="hero">
     <div class="hero-copy">
       <p class="eyebrow">EURO TO PHILIPPINE PESO</p>
-      <h1>Find the best way to send money home.</h1>
+      <h2>Find the best way to send money home.</h2>
       <p class="hero-text">
         Compare trusted remittance providers in one place and see exactly what
         your recipient could receive.
@@ -38,16 +38,16 @@
     <div class="reference-badge">
       <div class="reference-badge-label">
         <span class="reference-dot"></span>
-        <span>Google Sheet reference rate</span>
+        <h3>Google Sheet reference rate</h3>
       </div>
-      <strong>€1 = {{ referenceRate | number: '1.2-2' }} PHP</strong>
-      <span class="reference-converted">
+      <h3>€1 = {{ referenceRate() | number: '1.2-2' }} PHP</h3>
+      <h3 class="reference-converted">
         €{{ amount | number: '1.2-2' }} converts to
         {{ referenceConvertedAmount() | number: '1.0-0' }} PHP
-      </span>
+      </h3>
       <span class="reference-source">
-        {{ referenceRateSource }}
-        {{ referenceRateSource === 'live' ? 'Live reference' : 'Fallback reference' }}
+        {{ referenceRateSource() }}
+        {{ referenceRateSource() === 'live' ? 'Live reference' : 'Fallback reference' }}
       </span>
     </div>
     <div class="section-heading">
@@ -59,7 +59,7 @@
     </div>
 
     <div class="provider-grid">
-      @for (provider of providers; track provider.name) {
+      @for (provider of providers(); track provider.name) {
         <article class="provider-card" [class.featured]="provider.featured">
           @if (provider.featured) {
             <span class="best-value">Best value</span>

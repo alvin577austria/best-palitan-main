@@ -20,7 +20,7 @@ footer {
 
 .topbar {
   justify-content: space-between;
-  margin-bottom: 86px;
+  margin-bottom: 26px;
 }
 
 .brand {
@@ -61,7 +61,7 @@ footer {
   grid-template-columns: 1fr 380px;
   gap: 72px;
   align-items: end;
-  margin-bottom: 92px;
+  margin-bottom: 20px;
 }
 
 .eyebrow {
@@ -97,9 +97,9 @@ h1 {
 }
 
 .amount-card {
-  padding: 28px;
+  padding: 15px;
   border: 1px solid #e2e7e3;
-  border-radius: 22px;
+  border-radius: 15px;
   background: #f8faf8;
   box-shadow: 0 16px 38px rgba(25, 49, 41, 0.07);
 }

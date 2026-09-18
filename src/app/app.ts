@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -16,6 +16,17 @@ interface Provider {
   quoteSource?: 'live' | 'fallback';
 }
 
+interface Quote {
+  rate: number;
+  fee: number;
+  source: 'live' | 'fallback';
+}
+
+interface ReferenceRate {
+  rate: number;
+  source: 'live' | 'fallback';
+}
+
 @Component({
   standalone: true,
   imports: [DecimalPipe, FormsModule],
@@ -25,11 +36,11 @@ interface Provider {
 })
 export class App implements OnInit {
   protected amount = 500;
-  protected referenceRate = 69.4;
-  protected referenceRateSource: 'live' | 'fallback' = 'fallback';
+  protected readonly referenceRate = signal(69.4);
+  protected readonly referenceRateSource = signal<'live' | 'fallback'>('fallback');
   private readonly http: HttpClient;
 
-  protected readonly providers: Provider[] = [
+  protected readonly providers = signal<Provider[]>([
     {
       name: 'BC Remit',
       shortName: 'BC',
@@ -68,8 +79,8 @@ export class App implements OnInit {
       color: '#3a9d8f',
     },
     {
-      name: 'Ria',
-      shortName: 'R',
+      name: 'Zolt',
+      shortName: 'Z',
       tagline: 'Send with confidence',
       rate: 63.21,
       fee: 3.49,
@@ -85,51 +96,59 @@ export class App implements OnInit {
       timeline: 'Same day',
       color: '#3979d8',
     },
-  ];
+  ]);
 
   constructor(http: HttpClient) {
     this.http = http;
   }
 
   async ngOnInit() {
-    //const bcRemit = this.providers.find((provider) => provider.name === 'BC Remit');
-    //if (!bcRemit) {
-    //  return;
-    //}
-
     try {
-      /*const [quote, referenceRate] = await Promise.all([
+      const [bcremit, nala, referenceRate] = await Promise.all([
         firstValueFrom(
-        this.http.get<{ rate: number; fee: number; source: 'live' | 'fallback' }>(
-          '/api/bcremit-quote',
-        ),
+          this.http.get<Quote>('/api/bcremit-quote'),
         ),
         firstValueFrom(
-          this.http.get<{ rate: number; source: 'live' | 'fallback' }>(
-              '/api/reference-rate',
-          ),
+          this.http.get<Quote>('/api/nala-quote'),
         ),
-      ]);*/
+        firstValueFrom(
+          this.http.get<ReferenceRate>('/api/reference-rate'),
+        ),
+      ]);
 
-      const referenceRate = await firstValueFrom(
-        this.http.get<{ rate: number; source: 'live' | 'fallback' }>(
-          '/api/reference-rate',
-        ),
+      this.providers.update((providers) =>
+        providers.map((provider) => {
+          if (provider.name === 'BC Remit') {
+            return {
+              ...provider,
+              rate: bcremit.rate,
+              fee: bcremit.fee,
+              quoteSource: bcremit.source,
+            };
+          }
+
+          if (provider.name === 'Nala') {
+            return {
+              ...provider,
+              rate: nala.rate,
+              fee: nala.fee,
+              quoteSource: nala.source,
+            };
+          }
+
+          return provider;
+        }),
       );
-
-      // bcRemit.rate = quote.rate;
-      // bcRemit.fee = quote.fee;
-      // bcRemit.quoteSource = quote.source;
-      this.referenceRate = referenceRate.rate;
-      this.referenceRateSource = referenceRate.source;
-    } catch {
-      //bcRemit.quoteSource = 'fallback';
+      this.referenceRate.set(referenceRate.rate);
+      this.referenceRateSource.set(referenceRate.source);
+    } catch (error) {
+      console.error('Unable to load live remittance quotes.', error);
     }
   }
 
   protected referenceConvertedAmount(): number {
     const value = Number.isFinite(this.amount) && this.amount > 0 ? this.amount : 0;
-    return value * this.referenceRate;
+    return value * this.referenceRate();
   }
 
   protected convertedAmount(provider: Provider): number {
