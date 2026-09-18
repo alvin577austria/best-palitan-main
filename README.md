@@ -54,6 +54,15 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+## Deploying to Cloudflare
+
+This app deploys as a Cloudflare Worker with the Angular production bundle served as static assets. The Worker also provides the `/api/bcremit-quote` and `/api/reference-rate` endpoints. BC Remit quotes use Cloudflare Browser Rendering, so no local Chrome or Express server is needed in production.
+
+1. Authenticate once with `npx wrangler login`.
+2. Run `npm run deploy`.
+
+The deployment prints the `*.workers.dev` URL. To validate the production bundle without publishing, run `npm run deploy:dry-run`.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
