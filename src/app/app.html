@@ -1,3 +1,10 @@
+@if (isLoadingQuotes()) {
+  <div class="loading-overlay" role="status" aria-live="polite" aria-label="Loading live provider quotes">
+    <span class="loading-spinner" aria-hidden="true"></span>
+    <span>Loading live provider quotes…</span>
+  </div>
+}
+
 <main class="page-shell">
   <nav class="topbar" aria-label="Main navigation">
     <a class="brand" href="/" aria-label="Best Palitan home">

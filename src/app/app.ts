@@ -37,6 +37,7 @@ interface ReferenceRate {
 })
 export class App implements OnInit {
   protected amount = 500;
+  protected readonly isLoadingQuotes = signal(true);
   protected readonly referenceRate = signal(69.4);
   protected readonly referenceRateSource = signal<'live' | 'fallback'>('fallback');
   private readonly http: HttpClient;
@@ -131,6 +132,8 @@ export class App implements OnInit {
       this.referenceRateSource.set(referenceRate.source);
     } catch (error) {
       console.error('Unable to load live remittance quotes.', error);
+    } finally {
+      this.isLoadingQuotes.set(false);
     }
   }
 

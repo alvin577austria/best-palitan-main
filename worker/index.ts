@@ -79,9 +79,9 @@ export default {
 };
 
 async function getProviderQuotes(env: Env): Promise<Quote[]> {
-  if (cachedQuotes && Date.now() - cachedQuotesAt < cacheDurationMs) {
-    return cachedQuotes;
-  }
+  //if (cachedQuotes && Date.now() - cachedQuotesAt < cacheDurationMs) {
+  //  return cachedQuotes;
+  //}
 
   const browser = await puppeteer.launch(env.BROWSER);
 

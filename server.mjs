@@ -22,12 +22,12 @@ const sheetRateFallback = {
   source: 'fallback',
 };
 const providerQuoteConfigs = [
-  { name: 'BC Remit', url: bcremitQuoteUrl, fallback },
+  { name: 'BC Remit', url: bcremitQuoteUrl, fallback }/*,
   { name: 'Nala', url: nalaQuoteUrl, fallback: { rate: 63.85, fee: 1.49 } },
   { name: 'LemFi', url: lemfiQuoteUrl, fallback: { rate: 63.68, fee: 1.99 } },
   { name: 'ACE', url: aceQuoteUrl, fallback: { rate: 62.95, fee: 3.99 } },
   { name: 'Zolt', url: zoltQuoteUrl, fallback: { rate: 63.21, fee: 3.49 } },
-  { name: 'Paysend', url: paysendQuoteUrl, fallback: { rate: 63.55, fee: 2.49 } },
+  { name: 'Paysend', url: paysendQuoteUrl, fallback: { rate: 63.55, fee: 2.49 } },*/
 ];
 
 let cachedQuote = null;
@@ -182,9 +182,9 @@ app.listen(port, () => {
 });
 
 async function getQuote() {
-  if (cachedQuote && Date.now() - cachedAt < 5 * 60 * 1000) {
-    return cachedQuote;
-  }
+  //if (cachedQuote && Date.now() - cachedAt < 5 * 60 * 1000) {
+  //  return cachedQuote;
+  //}
 
   return getProviderQuote({
     name: 'BC Remit',
@@ -208,10 +208,10 @@ async function getProviderQuote({ name, url, fallback: fallbackQuote }) {
     const quote = parseProviderQuote(bodyText, name, fallbackQuote);
     const result = { name, ...quote, source: 'live', fetchedAt: new Date().toISOString() };
 
-    if (name === 'BC Remit') {
-      cachedQuote = result;
-      cachedAt = Date.now();
-    }
+    // if (name === 'BC Remit') {
+    //   cachedQuote = result;
+    //   cachedAt = Date.now();
+    // }
 
     return result;
   } finally {
