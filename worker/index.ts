@@ -25,7 +25,7 @@ const providers: ProviderConfig[] = [
     name: 'BC Remit',
     url: 'https://bcremit.com/?country=ES',
     fallback: { rate: 63.42, fee: 2.99 },
-  },
+  }/*,
   {
     name: 'Nala',
     url: 'https://www.nala.com/country/philippines',
@@ -50,12 +50,13 @@ const providers: ProviderConfig[] = [
     name: 'Paysend',
     url: 'https://paysend.com/en-gb/send-money/from-spain-to-philippines',
     fallback: { rate: 63.55, fee: 2.49 },
-  },
+  },*/
 ];
 const sheetUrl =
   'https://docs.google.com/spreadsheets/d/1E7KJUMSfxYhH6Owwvj1zGia7vDhgjoOEzpnd6fQCRdA/export?format=csv&gid=813993135';
 const referenceRateFallback = { rate: 69.4, source: 'fallback' as const };
 const cacheDurationMs = 5 * 60 * 1000;
+const providerQuoteConcurrency = 3;
 
 let cachedQuotes: Quote[] | undefined;
 let cachedQuotesAt = 0;
@@ -87,8 +88,13 @@ async function getProviderQuotes(env: Env): Promise<Quote[]> {
 
   try {
     cachedQuotes = [];
-    for (const provider of providers) {
-      cachedQuotes.push(await getProviderQuote(browser, provider));
+    for (let index = 0; index < providers.length; index += providerQuoteConcurrency) {
+      const providerBatch = providers.slice(index, index + providerQuoteConcurrency);
+      cachedQuotes.push(
+        ...(await Promise.all(
+          providerBatch.map((provider) => getProviderQuote(browser, provider)),
+        )),
+      );
     }
     cachedQuotesAt = Date.now();
     return cachedQuotes;
@@ -137,9 +143,9 @@ function fallbackQuote(provider: ProviderConfig): Quote {
 }
 
 async function getReferenceRate() {
-  if (cachedReferenceRate && Date.now() - cachedReferenceRateAt < cacheDurationMs) {
-    return cachedReferenceRate;
-  }
+  //if (cachedReferenceRate && Date.now() - cachedReferenceRateAt < cacheDurationMs) {
+  //  return cachedReferenceRate;
+  //}
 
   try {
     const response = await fetch(sheetUrl);
@@ -177,10 +183,11 @@ function parseQuote(bodyText: string, provider: ProviderConfig): Pick<Quote, 'ra
     normalized.match(
       /(?:1\s*(?:EUR|€)|(?:EUR|€)\s*1|€\s*1(?:[.,]00)?)\s*[:=]\s*(?:₱|PHP)?\s*([0-9]+(?:[.,][0-9]+)?)/i,
     ) ??
-    normalized.match(
-      /1\s*(?:EUR|€)\s*(?:[≈~]|approx(?:imately)?)\s*(?:₱|PHP)?\s*([0-9]+(?:[.,][0-9]+)?)/i,
-    ) ??
-    normalized.match(/([0-9]+(?:[.,][0-9]+)?)\s*(?:₱|PHP)\s*(?:per|for)\s*1\s*(?:EUR|€)/i);
+    normalized.match(/1\s*(?:EUR|€)\s*(?:[≈~]|approx(?:imately)?)\s*(?:₱|PHP)?\s*([0-9]+(?:[.,][0-9]+)?)/i) ??
+    normalized.match(/<[^>]*>\s*1\s*(?:EUR|€)\s*(?:[≈~]|approx(?:imately)?)\s*(?:₱|PHP)?\s*([0-9]+(?:[.,][0-9]+)?)/i) ??
+    normalized.match(/([0-9]+(?:[.,][0-9]+)?)\s*(?:₱|PHP)\s*(?:per|for)\s*(?:1\s*)?(?:EUR|€)/i) ??
+    normalized.match(/(?:EUR|€)\s*1\s*(?:to|=|:)?\s*(?:₱|PHP)?\s*([0-9]+(?:[.,][0-9]+)?)/i) ??
+    normalized.match(/([0-9]+(?:[.,][0-9]+)?)\s*PHP\s*(?:per|for)?\s*(?:1\s*)?(?:EUR|€)/i);
   const feeMatch = normalized.match(
     /(?:fee|fees|service fee)[^€\d]{0,40}(?:€\s*)?([0-9]+(?:[.,][0-9]+)?)/i,
   );
