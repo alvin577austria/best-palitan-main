@@ -25,32 +25,22 @@ const providers: ProviderConfig[] = [
     name: 'BC Remit',
     url: 'https://bcremit.com/?country=ES',
     fallback: { rate: 63.42, fee: 2.99 },
-  }/*,
+  },
   {
     name: 'Nala',
     url: 'https://www.nala.com/country/philippines',
     fallback: { rate: 63.85, fee: 1.49 },
   },
   {
-    name: 'LemFi',
-    url: 'https://lemfi.com/en-es/',
+    name: 'Wise',
+    url: 'https://wise.com/gb/send-money/?sourceCurrency=EUR&targetCurrency=PHP&sourceAmount=1000',
     fallback: { rate: 63.68, fee: 1.99 },
   },
   {
-    name: 'ACE',
-    url: 'https://acemoneytransfer.com/Philippines/Send-Money-to-Philippines',
-    fallback: { rate: 62.95, fee: 3.99 },
-  },
-  {
-    name: 'Zolt',
-    url: 'https://zoltmoney.com/fil/',
+    name: 'RemitChoice',
+    url: 'https://www.remitchoice.com/fee-free-send-money-to/philippines',
     fallback: { rate: 63.21, fee: 3.49 },
   },
-  {
-    name: 'Paysend',
-    url: 'https://paysend.com/en-gb/send-money/from-spain-to-philippines',
-    fallback: { rate: 63.55, fee: 2.49 },
-  },*/
 ];
 const sheetUrl =
   'https://docs.google.com/spreadsheets/d/1E7KJUMSfxYhH6Owwvj1zGia7vDhgjoOEzpnd6fQCRdA/export?format=csv&gid=813993135';

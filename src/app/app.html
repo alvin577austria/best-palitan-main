@@ -45,7 +45,7 @@
     <div class="reference-badge">
       <div class="reference-badge-label">
         <span class="reference-dot"></span>
-        <h3>Google Sheet reference rate</h3>
+        <h3>Google rate</h3>
       </div>
       <h3>€1 = {{ referenceRate() | number: '1.2-2' }} PHP</h3>
       <h3 class="reference-converted">
@@ -53,8 +53,7 @@
         {{ referenceConvertedAmount() | number: '1.0-0' }} PHP
       </h3>
       <span class="reference-source">
-        {{ referenceRateSource() }}
-        {{ referenceRateSource() === 'live' ? 'Live reference' : 'Fallback reference' }}
+        {{ referenceRateSource() === 'live' ? 'Live' : 'Fallback reference' }}
       </span>
     </div>
     <div class="section-heading">
@@ -67,8 +66,11 @@
 
     <div class="provider-grid">
       @for (provider of providers(); track provider.name) {
-        <article class="provider-card" [class.featured]="provider.featured">
-          @if (provider.featured) {
+        <article
+          class="provider-card"
+          [class.featured]="provider.name === bestValueProviderName()"
+        >
+          @if (provider.name === bestValueProviderName()) {
             <span class="best-value">Best value</span>
           }
           <div class="provider-header">
@@ -76,7 +78,10 @@
               {{ provider.shortName }}
             </div>
             <div>
-              <h3>{{ provider.name }}</h3>
+              <div class="provider-title-row">
+                <h3>{{ provider.name }}</h3>
+                <span class="provider-rate">€1 = {{ provider.rate | number: '1.2-2' }} PHP</span>
+              </div>
               <p>{{ provider.tagline }}{{ provider.quoteSource === 'live' ? ' · Live rate' : '' }}</p>
             </div>
           </div>
@@ -86,25 +91,16 @@
               <dt>Converted amount</dt>
               <dd>{{ convertedAmount(provider) | number: '1.0-0' }} PHP</dd>
             </div>
-            <div class="detail-row">
-              <dt>Applicable fees</dt>
-              <dd>{{ provider.fee | number: '1.2-2' }} EUR</dd>
-            </div>
-            <div class="detail-row">
-              <dt>Timeline</dt>
-              <dd>{{ provider.timeline }}</dd>
-            </div>
-            <div class="detail-row">
-              <dt>Rate</dt>
-              <dd>€1 = {{ provider.rate | number: '1.2-2' }} PHP</dd>
-            </div>
-            <div class="detail-row total">
-              <dt>Final amount to receive</dt>
-              <dd>{{ finalAmount(provider) | number: '1.0-0' }} PHP</dd>
-            </div>
           </dl>
 
-          <button type="button" class="provider-action">Visit {{ provider.name }}</button>
+          <a
+            class="provider-action"
+            [href]="provider.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Visit {{ provider.name }}
+          </a>
         </article>
       }
     </div>

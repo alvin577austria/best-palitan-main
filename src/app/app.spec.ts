@@ -25,7 +25,7 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.reference-source')?.textContent).toContain('Live reference');
+    expect(compiled.querySelector('.reference-source')?.textContent).toContain('Live');
   });
 
   it('shows a loading overlay while provider quotes are loading', () => {
@@ -38,5 +38,21 @@ describe('App', () => {
     app['isLoadingQuotes'].set(false);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.loading-overlay')).toBeNull();
+  });
+
+  it('marks the provider with the highest rate as the best value', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+
+    app['providers'].update((providers) =>
+      providers.map((provider) =>
+        provider.name === 'Wise' ? { ...provider, rate: 80 } : provider,
+      ),
+    );
+    fixture.detectChanges();
+
+    const bestValueCard = fixture.nativeElement.querySelector('.provider-card.featured');
+    expect(bestValueCard?.textContent).toContain('Wise');
+    expect(bestValueCard?.querySelector('.best-value')?.textContent).toContain('Best value');
   });
 });

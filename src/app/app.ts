@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -12,7 +12,7 @@ interface Provider {
   fee: number;
   timeline: string;
   color: string;
-  featured?: boolean;
+  url: string;
   quoteSource?: 'live' | 'fallback';
 }
 
@@ -51,6 +51,7 @@ export class App implements OnInit {
       fee: 2.99,
       timeline: 'Minutes',
       color: '#f4b942',
+      url: 'https://bcremit.com/?country=ES',
     },
     {
       name: 'Nala',
@@ -60,45 +61,35 @@ export class App implements OnInit {
       fee: 1.49,
       timeline: 'Instant',
       color: '#f06a8d',
-      featured: true,
+      url: 'https://www.nala.com/country/philippines',
     },
     {
-      name: 'LemFi',
-      shortName: 'L',
-      tagline: 'Built for global families',
+      name: 'Wise',
+      shortName: 'W',
+      tagline: 'Transparent international transfers',
       rate: 63.68,
       fee: 1.99,
       timeline: 'Same day',
-      color: '#6e63dd',
+      color: '#9fe870',
+      url: 'https://wise.com/gb/send-money/?sourceCurrency=EUR&targetCurrency=PHP&sourceAmount=1000',
     },
     {
-      name: 'ACE',
-      shortName: 'A',
-      tagline: 'A familiar high-street choice',
-      rate: 62.95,
-      fee: 3.99,
-      timeline: '1–2 days',
-      color: '#3a9d8f',
-    },
-    {
-      name: 'Zolt',
-      shortName: 'Z',
-      tagline: 'Send with confidence',
+      name: 'RemitChoice',
+      shortName: 'RC',
+      tagline: 'Fast, secure money transfers',
       rate: 63.21,
       fee: 3.49,
       timeline: 'Minutes',
-      color: '#ef7652',
-    },
-    {
-      name: 'Paysend',
-      shortName: 'P',
-      tagline: 'Cards to cards, made easy',
-      rate: 63.55,
-      fee: 2.49,
-      timeline: 'Same day',
-      color: '#3979d8',
+      color: '#183c6b',
+      url: 'https://www.remitchoice.com/fee-free-send-money-to/philippines',
     },
   ]);
+  protected readonly bestValueProviderName = computed(() => {
+    const providers = this.providers();
+    return providers.reduce((bestProvider, provider) =>
+      provider.rate > bestProvider.rate ? provider : bestProvider,
+    ).name;
+  });
 
   constructor(http: HttpClient) {
     this.http = http;
@@ -144,10 +135,6 @@ export class App implements OnInit {
 
   protected convertedAmount(provider: Provider): number {
     return this.safeAmount() * provider.rate;
-  }
-
-  protected finalAmount(provider: Provider): number {
-    return Math.max(0, (this.safeAmount() - provider.fee) * provider.rate);
   }
 
   private safeAmount(): number {

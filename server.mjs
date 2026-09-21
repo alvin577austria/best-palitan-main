@@ -5,10 +5,8 @@ const app = express();
 const port = Number(process.env.PORT ?? 4301);
 const bcremitQuoteUrl = 'https://bcremit.com/?country=ES';
 const nalaQuoteUrl = 'https://www.nala.com/country/philippines';
-const lemfiQuoteUrl = 'https://lemfi.com/en-es/';
-const aceQuoteUrl = 'https://acemoneytransfer.com/Philippines/Send-Money-to-Philippines';
-const paysendQuoteUrl = 'https://paysend.com/en-gb/send-money/from-spain-to-philippines';
-const zoltQuoteUrl = 'https://zoltmoney.com/fil/';
+const wiseQuoteUrl = 'https://wise.com/gb/send-money/?sourceCurrency=EUR&targetCurrency=PHP&sourceAmount=1000';
+const remitchoiceQuoteUrl = 'https://www.remitchoice.com/fee-free-send-money-to/philippines';
 
 const sheetUrl =
   'https://docs.google.com/spreadsheets/d/1E7KJUMSfxYhH6Owwvj1zGia7vDhgjoOEzpnd6fQCRdA/export?format=csv&gid=813993135';
@@ -22,12 +20,10 @@ const sheetRateFallback = {
   source: 'fallback',
 };
 const providerQuoteConfigs = [
-  { name: 'BC Remit', url: bcremitQuoteUrl, fallback }/*,
+  { name: 'BC Remit', url: bcremitQuoteUrl, fallback },
   { name: 'Nala', url: nalaQuoteUrl, fallback: { rate: 63.85, fee: 1.49 } },
-  { name: 'LemFi', url: lemfiQuoteUrl, fallback: { rate: 63.68, fee: 1.99 } },
-  { name: 'ACE', url: aceQuoteUrl, fallback: { rate: 62.95, fee: 3.99 } },
-  { name: 'Zolt', url: zoltQuoteUrl, fallback: { rate: 63.21, fee: 3.49 } },
-  { name: 'Paysend', url: paysendQuoteUrl, fallback: { rate: 63.55, fee: 2.49 } },*/
+  { name: 'Wise', url: wiseQuoteUrl, fallback: { rate: 63.68, fee: 1.99 } },
+  { name: 'RemitChoice', url: remitchoiceQuoteUrl, fallback: { rate: 63.21, fee: 3.49 } },
 ];
 
 let cachedQuote = null;
@@ -88,78 +84,40 @@ app.get('/api/nala-quote', async (_request, response) => {
   }
 });
 
-app.get('/api/lemfi-quote', async (_request, response) => {
+app.get('/api/wise-quote', async (_request, response) => {
   try {
     const quote = await getProviderQuote({
-      name: 'LemFi',
-      url: lemfiQuoteUrl,
+      name: 'Wise',
+      url: wiseQuoteUrl,
       fallback: { rate: 63.68, fee: 1.99 },
     });
     response.json(quote);
   } catch (error) {
-    console.error('LemFi quote failed:', error);
+    console.error('Wise quote failed:', error);
     response.json({
       rate: 63.68,
       fee: 1.99,
       source: 'fallback',
-      error: 'Live LemFi data is temporarily unavailable.',
+      error: 'Live Wise data is temporarily unavailable.',
     });
   }
 });
 
-app.get('/api/ace-quote', async (_request, response) => {
+app.get('/api/remitchoice-quote', async (_request, response) => {
   try {
     const quote = await getProviderQuote({
-      name: 'ACE',
-      url: aceQuoteUrl,
-      fallback: { rate: 62.95, fee: 3.99 },
-    });
-    response.json(quote);
-  } catch (error) {
-    console.error('ACE quote failed:', error);
-    response.json({
-      rate: 62.95,
-      fee: 3.99,
-      source: 'fallback',
-      error: 'Live ACE data is temporarily unavailable.',
-    });
-  }
-});
-
-app.get('/api/paysend-quote', async (_request, response) => {
-  try {
-    const quote = await getProviderQuote({
-      name: 'Paysend',
-      url: paysendQuoteUrl,
-      fallback: { rate: 63.55, fee: 2.49 },
-    });
-    response.json(quote);
-  } catch (error) {
-    console.error('Paysend quote failed:', error);
-    response.json({
-      rate: 63.55,
-      fee: 2.49,
-      source: 'fallback',
-      error: 'Live Paysend data is temporarily unavailable.',
-    });
-  }
-});
-
-app.get('/api/zolt-quote', async (_request, response) => {
-  try {
-    const quote = await getProviderQuote({
-      name: 'Zolt',
-      url: zoltQuoteUrl,
+      name: 'RemitChoice',
+      url: remitchoiceQuoteUrl,
       fallback: { rate: 63.21, fee: 3.49 },
     });
     response.json(quote);
   } catch (error) {
-    console.error('Zolt quote failed:', error);
+    console.error('RemitChoice quote failed:', error);
     response.json({
       rate: 63.21,
       fee: 3.49,
       source: 'fallback',
-      error: 'Live Zolt data is temporarily unavailable.',
+      error: 'Live RemitChoice data is temporarily unavailable.',
     });
   }
 });
@@ -270,7 +228,10 @@ function parseProviderQuote(bodyText, providerName, fallbackQuote) {
     normalized.match(/<[^>]*>\s*1\s*(?:EUR|€)\s*(?:[≈~]|approx(?:imately)?)\s*(?:₱|PHP)?\s*([0-9]+(?:[.,][0-9]+)?)/i) ??
     normalized.match(/([0-9]+(?:[.,][0-9]+)?)\s*(?:₱|PHP)\s*(?:per|for)\s*(?:1\s*)?(?:EUR|€)/i) ??
     normalized.match(/(?:EUR|€)\s*1\s*(?:to|=|:)?\s*(?:₱|PHP)?\s*([0-9]+(?:[.,][0-9]+)?)/i) ??
-    normalized.match(/([0-9]+(?:[.,][0-9]+)?)\s*PHP\s*(?:per|for)?\s*(?:1\s*)?(?:EUR|€)/i);
+    normalized.match(/(?:₱|PHP)\s*([0-9]+(?:[.,][0-9]+)?)/i) ??
+    normalized.match(/([0-9]+(?:[.,][0-9]+)?)\s*PHP\s*(?:per|for)?\s*(?:1\s*)?(?:EUR|€)/i) ??
+    normalized.match(/([0-9]+(?:[.,][0-9]+){1,4})\s*PHP/i) ??
+    normalized.match(/([0-9]+(?:[.,][0-9]+)?)\s*PHP/i);
   const feeMatch = 0;
 
   if (!rateMatch) {
