@@ -46,7 +46,6 @@ const sheetUrl =
   'https://docs.google.com/spreadsheets/d/1E7KJUMSfxYhH6Owwvj1zGia7vDhgjoOEzpnd6fQCRdA/export?format=csv&gid=813993135';
 const referenceRateFallback = { rate: 69.4, source: 'fallback' as const };
 const cacheDurationMs = 5 * 60 * 1000;
-const providerQuoteConcurrency = 3;
 
 let cachedQuotes: Quote[] | undefined;
 let cachedQuotesAt = 0;
@@ -77,15 +76,9 @@ async function getProviderQuotes(env: Env): Promise<Quote[]> {
   const browser = await puppeteer.launch(env.BROWSER);
 
   try {
-    cachedQuotes = [];
-    for (let index = 0; index < providers.length; index += providerQuoteConcurrency) {
-      const providerBatch = providers.slice(index, index + providerQuoteConcurrency);
-      cachedQuotes.push(
-        ...(await Promise.all(
-          providerBatch.map((provider) => getProviderQuote(browser, provider)),
-        )),
-      );
-    }
+    cachedQuotes = await Promise.all(
+      providers.map((provider) => getProviderQuote(browser, provider)),
+    );
     cachedQuotesAt = Date.now();
     return cachedQuotes;
   } catch (error) {
